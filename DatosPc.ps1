@@ -7,7 +7,7 @@ $ServidorSMTP = "smtp.gmail.com"
 $PuertoSMTP   = 587
 
 # =========================================================================
-# 2. OBTENCIÓN DE INFORMACIÓN DEL SISTEMA
+# 2. OBTENCIÓN DE INFORMACIÓN DEL SISTEMA (Sin IDs protegidos)
 # =========================================================================
 $NombrePC = $env:COMPUTERNAME
 $Usuario = $env:USERNAME
@@ -17,8 +17,6 @@ $ModeloPC = (Get-CimInstance Win32_ComputerSystem).Model
 $MarcaPC = (Get-CimInstance Win32_ComputerSystem).Manufacturer
 $Procesador = (Get-CimInstance Win32_Processor).Name
 $RAM = [math]::Round((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory / 1GB, 2)
-$Idproducto = (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion" -Name ProductId).ProductId
-$Iddispositivo = (Get-CimInstance Win32_ComputerSystemProduct).UUID
 
 # Determinar si es PC o Notebook (basado en la batería)
 $Bateria = Get-CimInstance Win32_Battery
@@ -64,7 +62,7 @@ foreach ($ver in $OfficeVersions) {
 }
 
 # =========================================================================
-# 3. CREAR EL CONTENIDO DEL INFORME (Se guarda en la variable $Contenido)
+# 3. CREAR EL CONTENIDO DEL INFORME
 # =========================================================================
 $Contenido = @"
 ==========================================
@@ -79,8 +77,6 @@ Modelo             : $ModeloPC
 Procesador         : $Procesador
 Memoria RAM        : $RAM GB
 Sistema Operativo : $SistemaOperativo ($Arquitectura)
-idproducto        : $Idproducto
-iddispositivo     : $Iddispositivo
 ==========================================
     MICROSOFT OFFICE INSTALADO
 ==========================================
@@ -101,18 +97,16 @@ $ConfigCorreo = @{
     From       = $MiCorreo
     To         = $MiCorreo
     Subject    = "Reporte - PC: $NombrePC - Usuario: $Usuario"
-    Body       = $Contenido                                      # <-- Usa el texto directo de la RAM
+    Body       = $Contenido
     SmtpServer = $ServidorSMTP
     Port       = $PuertoSMTP
     UseSsl     = $true
 }
 
-# Cargar las credenciales de forma segura
 $PasswordSecure = ConvertTo-SecureString $PasswordApp -AsPlainText -Force
 $Credenciales = New-Object System.Management.Automation.PSCredential ($MiCorreo, $PasswordSecure)
 
-# Enviar el correo
 Write-Host "Recopilando datos de la PC..." -ForegroundColor Yellow
 Write-Host "Enviando reporte directamente a tu email..." -ForegroundColor Cyan
 Send-MailMessage @ConfigCorreo -Credential $Credenciales
-Write-Host "¡Listo! Correo enviado sin guardar archivos en el disco." -ForegroundColor Green
+Write-Host "¡Listo! Correo enviado sin trabas de permisos." -ForegroundColor Green
