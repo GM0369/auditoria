@@ -3,32 +3,27 @@ $PasswordApp     = "zwlf mvcn jtlu hiku"
 $ServidorSMTP    = "smtp.gmail.com"
 $PuertoSMTP      = 587
 
-$CarpetaInventario = ".\Inventario"
-$ArchivoZip        = ".\Inventario.zip"
+# Apuntamos al archivo suelto en la carpeta actual
+$ArchivoReporte = ".\Info_PC.txt"
 
-if (Test-Path $CarpetaInventario) {
-    if (Test-Path $ArchivoZip) { Remove-Item $ArchivoZip -Force }
-
-    Write-Host "Comprimiendo la carpeta Inventario..." -ForegroundColor Yellow
-    Compress-Archive -Path $CarpetaInventario -DestinationPath $ArchivoZip -Force
-
+if (Test-Path $ArchivoReporte) {
     $ConfigCorreo = @{
         From       = $MiCorreo
         To         = $MiCorreo
-        Subject    = "Inventario Consolidado - Equipo: $($env:COMPUTERNAME)"
-        Body       = "Adjunto se remite el paquete comprimido de la carpeta Inventario generada."
+        Subject    = "Inventario Directo - Equipo: $($env:COMPUTERNAME)"
+        Body       = "Se remite el reporte de inventario en texto plano generado en la estación de diagnóstico."
         SmtpServer = $ServidorSMTP
         Port       = $PuertoSMTP
         UseSsl     = $true
-        Attachments = $ArchivoZip
+        Attachments = $ArchivoReporte
     }
 
     $PasswordSecure = ConvertTo-SecureString $PasswordApp -AsPlainText -Force
     $Credenciales = New-Object System.Management.Automation.PSCredential ($MiCorreo, $PasswordSecure)
 
-    Write-Host "Enviando correo con el archivo comprimido..." -ForegroundColor Cyan
+    Write-Host "Enviando reporte por correo..." -ForegroundColor Cyan
     Send-MailMessage @ConfigCorreo -Credential $Credenciales
     Write-Host "Proceso de envío completado con éxito." -ForegroundColor Green
 } else {
-    Write-Warning "Error: No se localizó la carpeta 'Inventario' para procesar."
+    Write-Warning "Error: No se localizó el archivo 'Info_PC.txt' para enviar."
 }
