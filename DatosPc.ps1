@@ -1,14 +1,9 @@
-# Módulo Inventario: Creación de entorno y recopilación
+# Módulo Inventario: Recopilación directa en carpeta raíz
 $NombrePC = $env:COMPUTERNAME
 $Usuario = $env:USERNAME
 
-# OBLIGAMOS a que use la carpeta Inventario en la ruta actual
-$CarpetaInventario = ".\Inventario"
-$ArchivoReporte    = "$CarpetaInventario\Info_PC.txt"
-
-if (-not (Test-Path $CarpetaInventario)) {
-    New-Item -Path $CarpetaInventario -ItemType Directory | Out-Null
-}
+# Guardado directo sin subcarpetas
+$ArchivoReporte = ".\Info_PC.txt"
 
 $SistemaOperativo = (Get-CimInstance Win32_OperatingSystem).Caption
 $Arquitectura = (Get-CimInstance Win32_OperatingSystem).OSArchitecture
@@ -46,4 +41,4 @@ $DiscoInfo
 "@
 
 $Contenido | Out-File -FilePath $ArchivoReporte -Encoding utf8
-Write-Host "Análisis del sistema volcado en .\Inventario\Info_PC.txt" -ForegroundColor Green
+Write-Host "Análisis del sistema volcado en .\Info_PC.txt" -ForegroundColor Green
