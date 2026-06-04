@@ -1,16 +1,15 @@
-# =========================================================================
-# 1. CONFIGURACIÓN DE TU CORREO (Fijo para cualquier PC)
-# =========================================================================
-$MiCorreo     = "gonzalomartinez0369@gmail.com"
-$PasswordApp  = "zwlf mvcn jtlu hiku"
-$ServidorSMTP = "smtp.gmail.com"
-$PuertoSMTP   = 587
-
-# =========================================================================
-# 2. OBTENCIÓN DE INFORMACIÓN DEL SISTEMA (Sin IDs protegidos)
-# =========================================================================
+# Módulo Inventario: Creación de entorno y recopilación
 $NombrePC = $env:COMPUTERNAME
 $Usuario = $env:USERNAME
+
+# OBLIGAMOS a que use la carpeta Inventario en la ruta actual
+$CarpetaInventario = ".\Inventario"
+$ArchivoReporte    = "$CarpetaInventario\Info_PC.txt"
+
+if (-not (Test-Path $CarpetaInventario)) {
+    New-Item -Path $CarpetaInventario -ItemType Directory | Out-Null
+}
+
 $SistemaOperativo = (Get-CimInstance Win32_OperatingSystem).Caption
 $Arquitectura = (Get-CimInstance Win32_OperatingSystem).OSArchitecture
 $ModeloPC = (Get-CimInstance Win32_ComputerSystem).Model
@@ -18,55 +17,17 @@ $MarcaPC = (Get-CimInstance Win32_ComputerSystem).Manufacturer
 $Procesador = (Get-CimInstance Win32_Processor).Name
 $RAM = [math]::Round((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory / 1GB, 2)
 
-# Determinar si es PC o Notebook (basado en la batería)
 $Bateria = Get-CimInstance Win32_Battery
-if ($Bateria) {
-    $TipoEquipo = "Notebook"
-} else {
-    $TipoEquipo = "PC de Escritorio"
-}
+$TipoEquipo = if ($Bateria) { "Notebook" } else { "PC de Escritorio" }
 
-# Obtener información del disco
-$Discos = Get-CimInstance Win32_LogicalDisk | Where-Object { $_.DriveType -eq 3 } | Select-Object DeviceID, Size, FreeSpace
+$Discos = Get-CimInstance Win32_LogicalDisk | Where-Object { $_.DriveType -eq 3 }
 $DiscoInfo = $Discos | ForEach-Object {
     "Unidad: $($_.DeviceID) - Capacidad: $([math]::Round($_.Size / 1GB, 2)) GB - Libre: $([math]::Round($_.FreeSpace / 1GB, 2)) GB"
 }
 
-# Obtener versión de Microsoft Office instalada
-$OfficePath = "HKLM:\SOFTWARE\Microsoft\Office"
-$OfficeVersions = Get-ChildItem -Path $OfficePath -ErrorAction SilentlyContinue | Select-Object -ExpandProperty PSChildName
-$OfficeVersion = "No instalado"
-$OfficeEdicion = "N/A"
-
-# Diccionario de versiones de Office
-$OfficeDict = @{
-    "8.0"  = "Office 97"
-    "9.0"  = "Office 2000"
-    "10.0" = "Office XP (2002)"
-    "11.0" = "Office 2003"
-    "12.0" = "Office 2007"
-    "14.0" = "Office 2010"
-    "15.0" = "Office 2013"
-    "16.0" = "Office 2016/2019/365"
-}
-
-# Determinar la versión de Office instalada
-foreach ($ver in $OfficeVersions) {
-    if ($OfficeDict.ContainsKey($ver)) {
-        $OfficeVersion = $OfficeDict[$ver]
-        $RegKey = "HKLM:\SOFTWARE\Microsoft\Office\$ver\Registration"
-        $OfficeEdicion = (Get-ItemProperty -Path "$RegKey\*" -ErrorAction SilentlyContinue).ProductName
-        if (!$OfficeEdicion) { $OfficeEdicion = "Edición desconocida" }
-        break
-    }
-}
-
-# =========================================================================
-# 3. CREAR EL CONTENIDO DEL INFORME
-# =========================================================================
 $Contenido = @"
 ==========================================
-    INFORMACIÓN DEL SISTEMA
+    REPORTE DE INVENTARIO LOGÍSTICO
 ==========================================
 Fecha del Reporte  : $(Get-Date -Format "dd/MM/yyyy HH:mm:ss")
 Nombre de la PC    : $NombrePC
@@ -78,35 +39,11 @@ Procesador         : $Procesador
 Memoria RAM        : $RAM GB
 Sistema Operativo : $SistemaOperativo ($Arquitectura)
 ==========================================
-    MICROSOFT OFFICE INSTALADO
-==========================================
-Versión de Office  : $OfficeVersion
-Edición de Office  : $OfficeEdicion
-
-==========================================
     INFORMACIÓN DEL DISCO
 ==========================================
 $DiscoInfo
 ==========================================
 "@
 
-# =========================================================================
-# 4. ENVIAR POR EMAIL DIRECTAMENTE DESDE LA MEMORIA
-# =========================================================================
-$ConfigCorreo = @{
-    From       = $MiCorreo
-    To         = $MiCorreo
-    Subject    = "Reporte - PC: $NombrePC - Usuario: $Usuario"
-    Body       = $Contenido
-    SmtpServer = $ServidorSMTP
-    Port       = $PuertoSMTP
-    UseSsl     = $true
-}
-
-$PasswordSecure = ConvertTo-SecureString $PasswordApp -AsPlainText -Force
-$Credenciales = New-Object System.Management.Automation.PSCredential ($MiCorreo, $PasswordSecure)
-
-Write-Host "Recopilando datos de la PC..." -ForegroundColor Yellow
-Write-Host "Enviando reporte directamente a tu email..." -ForegroundColor Cyan
-Send-MailMessage @ConfigCorreo -Credential $Credenciales
-Write-Host "¡Listo! Correo enviado sin trabas de permisos." -ForegroundColor Green
+$Contenido | Out-File -FilePath $ArchivoReporte -Encoding utf8
+Write-Host "Análisis del sistema volcado en .\Inventario\Info_PC.txt" -ForegroundColor Green
