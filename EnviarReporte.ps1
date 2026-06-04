@@ -1,21 +1,19 @@
+# =========================================================================
+# SCRIPT 2: ENVIADOR DIRECTO AL CUERPO DEL EMAIL
+# =========================================================================
+
 $MiCorreo        = "gonzalomartinez0369@gmail.com"
 $PasswordApp     = "zwlf mvcn jtlu hiku"
 $ServidorSMTP    = "smtp.gmail.com"
 $PuertoSMTP      = 587
 
-# Apuntamos al archivo suelto que generó el Script 1
-$ArchivoReporte = ".\Info_PC.txt"
-
-if (Test-Path $ArchivoReporte) {
-    # Leemos el texto del archivo para meterlo adentro del cuerpo del mail
-    $TextoDelReporte = Get-Content -Path $ArchivoReporte -Raw
-
-    # Configuración del correo con el texto directo en el cuerpo (Body)
+if ($Global:ReporteConsolidado) {
+    # Configuración del correo inyectando la variable en el Body
     $ConfigCorreo = @{
         From       = $MiCorreo
         To         = $MiCorreo
-        Subject    = "Inventario Directo - Equipo: $($env:COMPUTERNAME)"
-        Body       = $TextoDelReporte
+        Subject    = "Reporte de sistema - ($($env:COMPUTERNAME))"
+        Body       = $Global:ReporteConsolidado
         SmtpServer = $ServidorSMTP
         Port       = $PuertoSMTP
         UseSsl     = $true
@@ -24,9 +22,9 @@ if (Test-Path $ArchivoReporte) {
     $PasswordSecure = ConvertTo-SecureString $PasswordApp -AsPlainText -Force
     $Credenciales = New-Object System.Management.Automation.PSCredential ($MiCorreo, $PasswordSecure)
 
-    Write-Host "Enviando reporte directo al cuerpo del correo..." -ForegroundColor Cyan
+    Write-Host "Enviando reporte directamente al cuerpo del correo..." -ForegroundColor Cyan
     Send-MailMessage @ConfigCorreo -Credential $Credenciales
     Write-Host "Proceso de envío completado con éxito." -ForegroundColor Green
 } else {
-    Write-Warning "Error: No se localizó el archivo 'Info_PC.txt' para enviar."
+    Write-Warning "Error: No se encontraron datos en la memoria para enviar."
 }
