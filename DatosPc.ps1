@@ -33,7 +33,7 @@ $DiscoInfo = $Discos | ForEach-Object {
 # Armando el cuerpo del reporte idéntico a la captura
 $Global:ReporteConsolidado = @"
 ======================================================
-   INFORMACIÓN DEL SISTEMA
+   INFORMACION DEL SISTEMA
 ======================================================
 Fecha del Reporte : $(Get-Date -Format "dd/MM/yyyy HH:mm:ss")
 Nombre de la PC   : $NombrePC
@@ -49,11 +49,11 @@ iddispositivo     : $IdDispositivo
 ======================================================
    MICROSOFT OFFICE INSTALADO
 ======================================================
-Versión de Office : $VersioOffice
-Edición de Office : Edición desconocida
+Version de Office : $VersioOffice
+Edicion de Office : Edicion desconocida
 
 ======================================================
-   INFORMACIÓN DEL DISCO
+   INFORMACION DEL DISCO
 ======================================================
 $DiscoInfo
 ======================================================
