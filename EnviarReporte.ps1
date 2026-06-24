@@ -24,7 +24,7 @@ if ($Global:ReporteConsolidado) {
 
     Write-Host "Enviando reporte directamente al cuerpo del correo..." -ForegroundColor Cyan
     Send-MailMessage @ConfigCorreo -Credential $Credenciales
-    Write-Host "Proceso de envío completado con éxito." -ForegroundColor Green
+    Write-Host "Proceso de envio completado con exito." -ForegroundColor Green
 } else {
     Write-Warning "Error: No se encontraron datos en la memoria para enviar."
 }
