@@ -59,4 +59,4 @@ $DiscoInfo
 ======================================================
 "@
 
-Write-Host "Recopilación de hardware finalizada." -ForegroundColor Green
+Write-Host "Recopilacion de hardware finalizada." -ForegroundColor Green
